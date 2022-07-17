@@ -135,7 +135,7 @@ class Commands(Cog):
         account_type: The type of account you want to get
         """
         role = disnake.utils.get(inter.guild.roles, name="GEN ACCESS")
-        role1 = disnake.utils.get(inter.guild.roles, name="OWNER")
+        role1 = disnake.utils.get(inter.guild.roles, name="Owner")
 
         if role or role1 not in inter.author.roles:
             return await inter.send("You do not have permission to use this command.")
