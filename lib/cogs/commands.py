@@ -134,10 +134,9 @@ class Commands(Cog):
         ----------
         account_type: The type of account you want to get
         """
-        role = disnake.utils.get(inter.guild.roles, name="GEN ACCESS")
-        role1 = disnake.utils.get(inter.guild.roles, name="Owner")
+        role = inter.guild.get_role(996256479990513734)
 
-        if role or role1 not in inter.author.roles:
+        if role not in inter.author.roles:
             return await inter.send("You do not have permission to use this command.")
 
         account = db.field("SELECT * FROM accs WHERE accounttype = ? ORDER BY RANDOM() LIMIT 1", account_type)
