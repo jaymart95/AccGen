@@ -102,7 +102,7 @@ class Commands(Cog):
             await member.send(f"You have received a key. Expiration: {duration}.\n\n{key}")
             await inter.send(f"Successfully gave {member.mention} a key. Expiration: {duration}", ephemeral=True)
 
-    @slash_command(name="upload")
+    @slash_command(name="upload", default_member_permissions=disnake.Permissions(administrator=True))
     async def upload(self, inter, attachment: disnake.Attachment, account_type: typing.Literal["aged cod", "bnet", "phub", "spotify", "disney", "val", "hbo max", "netflix"]):
         """
         Upload accounts to the database
@@ -158,6 +158,20 @@ class Commands(Cog):
         if account is None:
             return await inter.send("No accounts of this type")
         await inter.send(f"{account} {account_type} accounts")
+
+    
+    @slash_command(name="clear_stock", default_member_permissions=disnake.Permissions(administrator=True))
+    async def clear_stock(self, inter, account_type: typing.Literal["aged cod", "bnet", "phub", "spotify", "disney", "val", "hbo max", "netflix"]):
+        """
+        Clear all accounts of a certain type
+
+        Parameters
+        ----------
+        account_type: The type of account you want to clear
+        """
+        db.execute("DELETE FROM accs WHERE accounttype = ?", account_type)
+        db.commit()
+        await inter.send(f"Cleared {account_type} accounts")
 
 
 def setup(bot):
