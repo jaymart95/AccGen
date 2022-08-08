@@ -63,9 +63,10 @@ class Commands(Cog):
         """
         List all redeemable keys
         """
-        keys = []
-        keys.append(db.column("SELECT * FROM access_keys"))
-        await inter.send(f"```{keys}```", ephemeral=True)
+        keys = db.column("SELECT * FROM access_keys")
+        if len(keys) < 1:
+            return await inter.send("There are no keys")
+        await inter.send("```\n" + "\n".join(keys) + "```", ephemeral=True)
 
     @slash_command(name="key", default_member_permissions=disnake.Permissions(administrator=True))
     async def key(self, inter, member: disnake.Member, duration: typing.Literal["1d", "3d", "7d", "30d", "Lifetime"]):
