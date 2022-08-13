@@ -145,6 +145,8 @@ class Commands(Cog):
         db.execute("DELETE FROM accs WHERE account = ?", account)
         if account is None:
             return await inter.send("No accounts of this type")
+        db.execute("UPDATE members SET redeems = redeems + ? WHERE userID = ?", 1, inter.author.id)
+        db.commit()
         redeems = db.field("SELECT redeems FROM members WHERE userID = ?", inter.author.id)
         log_channel = inter.guild.get_channel(1008122637987369031)
         embed = disnake.Embed(title=f"{account_type} has been generated", color=0x00ff00)
