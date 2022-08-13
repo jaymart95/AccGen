@@ -8,6 +8,7 @@ from disnake.ext.commands import Cog, has_permissions, Param, cooldown, BucketTy
 from disnake.ext.commands.slash_core import slash_command
 from lib.db import db
 from lib.utils.helpers import get_random_string
+from disnake.ext import tasks
 
 class Commands(Cog):
     def __init__(self, bot):
@@ -63,7 +64,7 @@ class Commands(Cog):
         """
         List all redeemable keys
         """
-        keys = db.column("SELECT * FROM access_keys")
+        keys = db.record("SELECT * FROM access_keys")
         if len(keys) < 1:
             return await inter.send("There are no keys")
         await inter.send("```\n" + "\n".join(keys) + "```", ephemeral=True)
@@ -127,7 +128,7 @@ class Commands(Cog):
 
     @slash_command(name="account")
     @cooldown(15, 86400, BucketType.member)
-    async def account(self, inter, account_type: typing.Literal["aged cod", "bnet", "phub", "spotify", "disney", "val", "hbo max", "netflix"]):
+    async def account(self, inter: disnake.ApplicationCommandInteraction, account_type: typing.Literal["aged cod", "bnet", "phub", "spotify", "disney", "val", "hbo max", "netflix"]):
         """
         Get a random account of a certain type
 
@@ -144,6 +145,12 @@ class Commands(Cog):
         db.execute("DELETE FROM accs WHERE account = ?", account)
         if account is None:
             return await inter.send("No accounts of this type")
+        redeems = db.field("SELECT redeems FROM members WHERE userID = ?", inter.author.id)
+        log_channel = inter.guild.get_channel(1008122637987369031)
+        embed = disnake.Embed(title=f"{account_type} has been generated", color=0x00ff00)
+        embed.set_author(name=inter.author, icon_url=inter.author.avatar.url)
+        embed.add_field(name="Daily Redeems", value=redeems)
+        await log_channel.send(embed=embed)
         await inter.send(f"{account}", ephemeral=True)
 
     @slash_command(name="stock")
@@ -173,6 +180,12 @@ class Commands(Cog):
         db.execute("DELETE FROM accs WHERE accounttype = ?", account_type)
         db.commit()
         await inter.send(f"Cleared {account_type} accounts")
+
+    @tasks.loop(hours=24)
+    async def redeem_reset(self):
+        for member in self.bot.guild.members:
+            db.execute("UPDATE members SET redeems = ? WHERE UserID = ?", 0, member.id)   
+
 
 
 def setup(bot):
