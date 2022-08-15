@@ -188,7 +188,17 @@ class Commands(Cog):
         for member in self.bot.guild.members:
             db.execute("UPDATE members SET redeems = ? WHERE UserID = ?", 0, member.id)   
 
-
+    @slash_command(name="sync", default_member_permissions=disnake.Permissions(administrator=True))
+    async def sync(self, inter: disnake.ApplicationCommandInteraction):
+        """
+        Sync the database with the bot's database
+        """
+        await inter.response.defer(with_message=True, ephemeral=True)
+        await inter.edit_original_message(content="Syncing...")
+        for member in inter.guild.members:
+            await db.execute("INSERT OR IGNORE INTO members (userID) VALUES (?)", member.id)
+        await db.commit()
+        await inter.edit_original_message(content="Successfully synced")
 
 def setup(bot):
     bot.add_cog(Commands(bot))
